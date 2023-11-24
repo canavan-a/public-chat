@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,7 +19,7 @@ type ConnectionUser struct {
 }
 
 var (
-	connections = make(map[ConnectionUser]bool)
+	connections = make(map[*ConnectionUser]bool)
 	//This mutex locks everything insode this code block
 	connectionsMutex sync.Mutex
 	upgrader         = websocket.Upgrader{
@@ -45,16 +46,26 @@ func handleWebSocket(c *gin.Context) {
 		Username:   username,
 		Room:       room,
 	}
+	// need to check if there is currently a user so we dont have
+
+	for cUser := range connections {
+
+		if cUser.Username == username && cUser.Room == room {
+			fmt.Println("closed due to condition")
+			conn.Close()
+			return
+		}
+	}
 
 	connectionsMutex.Lock()
-	connections[cUser] = true
+	connections[&cUser] = true
 	connectionsMutex.Unlock()
 
 	defer func() {
 		conn.Close()
 
 		connectionsMutex.Lock()
-		delete(connections, cUser)
+		delete(connections, &cUser)
 		connectionsMutex.Unlock()
 	}()
 
@@ -66,17 +77,33 @@ func handleWebSocket(c *gin.Context) {
 			return
 		}
 
-		broadcastMessage(messageType, p, room)
+		broadcastMessage(messageType, p, room, username)
 	}
 }
 
-func broadcastMessage(messageType int, message []byte, room string) {
+type Message struct {
+	Msg      string `json:"msg"`
+	Username string `json:"username"`
+}
+
+func broadcastMessage(messageType int, message []byte, room string, username string) {
 	connectionsMutex.Lock()
 	defer connectionsMutex.Unlock()
 
+	currentMessage := Message{
+		Msg:      string(message),
+		Username: username,
+	}
+
+	jsonData, err := json.Marshal(currentMessage)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	for cUser := range connections {
 		if cUser.Room == room { // need to select the correct room
-			err := cUser.Connection.WriteMessage(messageType, message)
+			err := cUser.Connection.WriteMessage(messageType, jsonData)
 			if err != nil {
 				fmt.Printf(cUser.Room)
 				log.Println(err)
