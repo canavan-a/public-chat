@@ -1,2 +1,2 @@
-# public-chat
+# Public Chat
 golang websocket chatrooms
