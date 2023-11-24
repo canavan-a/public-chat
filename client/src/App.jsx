@@ -1,33 +1,68 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useRef, useEffect } from 'react'
+import axios from 'axios';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [api, setApi] = useState(import.meta.env.VITE_API_PATH);
+  const ws = useRef(null);
+  const [username, setusername] = useState("aidan")
+  const [room, setRoom] = useState("myroom")
+  const [msg, setMsg] = useState("")
+  const [changeRoom, setChangeRoom] = useState(true)
+
+  useEffect(() => {
+    // Replace 'ws://example.com/socket' with your WebSocket server endpoint
+    ws.current = new WebSocket(`${api.replace("http","ws")}/upgrade?username=${username}&room=${room}`);
+
+    // WebSocket event listeners
+    ws.current.onopen = () => {
+      console.log('WebSocket connection opened');
+    };
+
+    ws.current.onmessage = (event) => {
+      console.log('Received message:', event.data);
+      // Handle incoming messages from the server
+    };
+
+    ws.current.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+
+    // Cleanup function to close the WebSocket connection when the component is unmounted
+    return () => {
+      if (ws.current) {
+        ws.current.close();
+      }
+    };
+  }, [changeRoom]);
+
+  // Function to send a message to the WebSocket server
+  const sendMessage = () => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.send(msg);
+    }
+  };
+
+  const testBackend = () =>{
+    axios.get(`${api}/`).then((response)=>{
+      console.log(response.data)
+    }).catch((error)=>{
+      console.log(error.response.data)
+    })
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className="chat chat-start">
+        <div className="chat-bubble">It's over Anakin, <br/>I have the high ground.</div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+      <div className="chat chat-end">
+        <div className="chat-bubble">You underestimate my power!</div>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <input className="input input-bordered" value={room} onChange={(e)=>{setRoom(e.target.value)}}></input>
+      <input className="input input-bordered" value={msg} onChange={(e)=>{setMsg(e.target.value)}}></input>
+      <button className="btn btn-primary" onClick={sendMessage}>send ws</button>
+      <button className="btn btn-primary" onClick={testBackend}>test backend</button>
+      <button className="btn btn-primary" onClick={()=>{setChangeRoom(!changeRoom)}}>change room</button>
     </>
   )
 }
