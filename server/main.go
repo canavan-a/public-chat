@@ -201,9 +201,9 @@ func main() {
 
 	r.Static("/assets", "./assets")
 
-	r.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Server is running.")
-	})
+	// r.GET("/", func(c *gin.Context) {
+	// 	c.String(http.StatusOK, "Server is running.")
+	// })
 
 	r.GET("/upgrade", handleWebSocket)
 	r.GET("/rooms", handleHomeSocket)
@@ -211,6 +211,8 @@ func main() {
 	r.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", nil)
 	})
+
+	fmt.Println("server is running")
 
 	r.Run(":80")
 }
