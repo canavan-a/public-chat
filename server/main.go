@@ -45,6 +45,15 @@ func handleWebSocket(c *gin.Context) {
 	username := c.Query("username")
 	room := c.Query("room")
 
+	if len(username) == 0 || username == "null" {
+		conn.Close()
+		return
+	}
+	if len(room) == 0 || room == "null" {
+		conn.Close()
+		return
+	}
+
 	cUser := ConnectionUser{
 		Connection: conn,
 		Username:   username,
@@ -153,7 +162,12 @@ func handleHomeSocket(c *gin.Context) {
 	}()
 
 	for {
-
+		messageType, p, err := conn.ReadMessage()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		fmt.Println(messageType, p)
 	}
 
 }

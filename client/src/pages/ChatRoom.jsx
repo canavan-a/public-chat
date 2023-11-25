@@ -32,7 +32,6 @@ const ChatRoom = (props) =>{
         setChat(prev => [...prev, newMsg]);
     }
     ws.current.onclose = () => {
-      alert("connection has been suspended")
       navigate("/")
     };
     return () => {
@@ -58,12 +57,6 @@ const ChatRoom = (props) =>{
                 <div className="chat-bubble">{value.msg}</div>
             </div>
         ))}
-        <div className="chat chat-start">
-            <div className="chat-bubble">It's over Anakin, <br/>I have the high ground.</div>
-        </div>
-      <div className="chat chat-end">
-        <div className="chat-bubble">You underestimate my power!</div>
-      </div>
 
       <input className="input input-bordered input-success input-lg" value={msg} onChange={(e)=>{setMsg(e.target.value)}}></input>
     <button className='btn btn-primary' onClick={sendMessage}>Send</button>
