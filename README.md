@@ -1,2 +1,3 @@
-![image](https://github.com/canavan-a/public-chat/assets/127001388/61166e2c-49ae-4096-bb6f-06a4900f859d)
+![image](https://github.com/canavan-a/public-chat/assets/127001388/ae4b9131-f767-4937-bd36-b8284a315759)
+
 
