@@ -91,7 +91,7 @@ const Home = (props) => {
                     <img src="https://storage.prompt-hunt.workers.dev/clg1va6fi000dmo089c1ytfbe_1" className="max-w-sm rounded-lg shadow-2xl" />
                     <div>
                         <h1 className="text-5xl font-bold">Public Chat</h1>
-                        <p className="py-6">No messages are never stored or cached. </p>
+                        <p className="py-6">Messages never stored or cached. </p>
                         <div className="grid grid-cols-4 max-w-md gap-4">
                             <div className="grid grid-cols-6 gap-4 col-span-2">
                                 <input className={`input input-bordered input-sm col-span-6 ${usernameValid?'':'input-error'}`} value={username} onChange={(e)=>{setUsername(e.target.value)}} placeholder='username'></input>
