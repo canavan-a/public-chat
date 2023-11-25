@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"slices"
+	"strings"
 	"sync"
 
 	"github.com/gin-contrib/cors"
@@ -19,6 +21,8 @@ type ConnectionUser struct {
 }
 
 var (
+	homeConnections = make(map[*websocket.Conn]bool)
+
 	connections = make(map[*ConnectionUser]bool)
 	//This mutex locks everything insode this code block
 	connectionsMutex sync.Mutex
@@ -61,12 +65,21 @@ func handleWebSocket(c *gin.Context) {
 	connections[&cUser] = true
 	connectionsMutex.Unlock()
 
+	// publish rooms to all home screen connections
+	for hc := range homeConnections {
+		broadcastRooms(hc)
+	}
+
 	defer func() {
 		conn.Close()
 
 		connectionsMutex.Lock()
 		delete(connections, &cUser)
 		connectionsMutex.Unlock()
+		// broadcast all home screen conns when someone disconnects
+		for hc := range homeConnections {
+			broadcastRooms(hc)
+		}
 	}()
 
 	for {
@@ -118,6 +131,49 @@ func broadcastMessage(messageType int, message []byte, room string, username str
 	}
 }
 
+func handleHomeSocket(c *gin.Context) {
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	connectionsMutex.Lock()
+	homeConnections[conn] = true
+	connectionsMutex.Unlock()
+
+	broadcastRooms(conn)
+
+	defer func() {
+		conn.Close()
+
+		connectionsMutex.Lock()
+		delete(homeConnections, conn)
+		connectionsMutex.Unlock()
+	}()
+
+	for {
+
+	}
+
+}
+
+func broadcastRooms(myc *websocket.Conn) {
+	stringList := ("['" + strings.Join(allRooms(), "','") + "']")
+	message := []byte(strings.Replace(stringList, "''", "", 1))
+	myc.WriteMessage(websocket.TextMessage, message)
+}
+
+func allRooms() []string {
+	rooms := []string{}
+	for cUser := range connections {
+		if !slices.Contains(rooms, cUser.Username) {
+			rooms = append(rooms, cUser.Room)
+		}
+	}
+	return rooms
+}
+
 func main() {
 	r := gin.Default()
 	config := cors.DefaultConfig()
@@ -125,10 +181,11 @@ func main() {
 	r.Use(cors.New(config))
 
 	r.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Hello, Gin!")
+		c.String(http.StatusOK, "Server is running.")
 	})
 
 	r.GET("/upgrade", handleWebSocket)
+	r.GET("/rooms", handleHomeSocket)
 
 	r.Run(":80")
 }

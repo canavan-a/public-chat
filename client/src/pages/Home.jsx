@@ -2,6 +2,33 @@ import { useState, useRef, useEffect } from 'react'
 
 const Home = (props) =>{
 
+    const [api, setApi] = useState(import.meta.env.VITE_API_PATH);
+    const ws = useRef(null);
+
+    const [changeRoom, setChangeRoom] = useState(true);
+
+    const [rooms, setRooms] = useState([]);
+
+    useEffect(() => {
+        ws.current = new WebSocket(`ws${api}/rooms`);
+        ws.current.onopen = () => {
+          console.log('WebSocket connection opened');
+        };
+        ws.current.onmessage = (event) => {
+            console.log("message received");
+            console.log(event.data.replaceAll("'",'"'))
+            console.log(JSON.parse(event.data.replaceAll("'",'"')));
+        }
+        ws.current.onclose = () => {
+          console.log("connection closed");
+        };
+        return () => {
+          if (ws.current) {
+            ws.current.close();
+          }
+        };
+      }, [changeRoom]);
+
     return (
     <>
     
@@ -15,7 +42,7 @@ const Home = (props) =>{
       <input className="input input-bordered input-sm col-span-4" placeholder='username'></input>
       <input className="input input-bordered input-sm col-span-4" placeholder='room'></input>
       {/* <div className="col-span-2"></div> */}
-      <button className="btn btn-primary btn-sm col-span-2">Go</button>
+      <button className="btn btn-primary btn-sm col-span-2" onClick={()=>{setChangeRoom(!changeRoom)}}>Go</button>
       </div>
       
     </div>
