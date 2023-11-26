@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 const ChatRoom = (props) => {
   const navigate = useNavigate();
 
-  const [api, setApi] = useState(import.meta.env.VITE_API_PATH);
+  const [wsApi, setWsApi] = useState(import.meta.env.VITE_WS_PATH);
   const ws = useRef(null);
   const scrollableContent = useRef(null);
 
@@ -22,7 +22,8 @@ const ChatRoom = (props) => {
   useEffect(() => {
     console.log(username)
     console.log(room)
-    ws.current = new WebSocket(`ws${api}/upgrade?username=${username}&room=${room}`);
+    console.log(window.location.hostname)
+    ws.current = new WebSocket(`wss://${window.location.hostname}/upgrade?username=${username}&room=${room}`);
     ws.current.onopen = () => {
       console.log('WebSocket connection opened');
     };

@@ -5,7 +5,7 @@ const Home = (props) => {
 
     const navigate = useNavigate()
 
-    const [api, setApi] = useState(import.meta.env.VITE_API_PATH);
+    const [wsApi, setWsApi] = useState(import.meta.env.VITE_WS_PATH);
     const ws = useRef(null);
 
     const [changeRoom, setChangeRoom] = useState(true);
@@ -53,7 +53,7 @@ const Home = (props) => {
     },[room])
 
     useEffect(() => {
-        ws.current = new WebSocket(`ws${api}/rooms`);
+        ws.current = new WebSocket(`wss://${window.location.hostname}/rooms`);
         ws.current.onopen = () => {
             setConnected(true);
             console.log('WebSocket connection opened');
