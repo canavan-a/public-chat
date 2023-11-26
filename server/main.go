@@ -181,7 +181,7 @@ func broadcastRooms(myc *websocket.Conn) {
 func allRooms() []string {
 	rooms := []string{}
 	for cUser := range connections {
-		if !slices.Contains(rooms, cUser.Username) {
+		if !slices.Contains(rooms, cUser.Room) {
 			rooms = append(rooms, cUser.Room)
 		}
 	}
