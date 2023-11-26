@@ -73,7 +73,7 @@ const ChatRoom = (props) => {
       <div className="hero min-h-screen bg-base-200">
         <div className="hero-content flex-col lg:flex-col w-[100%] mx-auto ">
         <h1 className="text-5xl font-bold text-center">{room}</h1>
-          <div className="card w-[50%] bg-base-100 shadow-xl">
+          <div className="card sm:w-[100%] lg:w-[50%] bg-base-100 shadow-xl">
           
             <div className="card-body">
               <div 
