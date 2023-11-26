@@ -30,4 +30,4 @@ COPY --from=builder /server/assets /server/assets
 EXPOSE 80
 
 # Command to run the executable
-CMD ["./myapp"]
+CMD ["./main"]

@@ -189,17 +189,30 @@ func allRooms() []string {
 }
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
+
 	r := gin.Default()
+
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"*"}
 	r.Use(cors.New(config))
 
-	r.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Server is running.")
-	})
+	r.LoadHTMLGlob("templates/*")
+
+	r.Static("/assets", "./assets")
+
+	// r.GET("/", func(c *gin.Context) {
+	// 	c.String(http.StatusOK, "Server is running.")
+	// })
 
 	r.GET("/upgrade", handleWebSocket)
 	r.GET("/rooms", handleHomeSocket)
+
+	r.NoRoute(func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
+
+	fmt.Println("server is running")
 
 	r.Run(":80")
 }
