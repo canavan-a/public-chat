@@ -81,7 +81,7 @@ func handleWebSocket(c *gin.Context) {
 	broadcastMessage(websocket.TextMessage, nil, room, username, "entering")
 
 	defer func() {
-		broadcastMessage(websocket.TextMessage, nil, room, username, "leaving")
+
 		conn.Close()
 		connectionsMutex.Lock()
 		delete(connections, &cUser)
@@ -90,6 +90,7 @@ func handleWebSocket(c *gin.Context) {
 		for hc := range homeConnections {
 			broadcastRooms(hc)
 		}
+		broadcastMessage(websocket.TextMessage, nil, room, username, "leaving")
 	}()
 
 	for {

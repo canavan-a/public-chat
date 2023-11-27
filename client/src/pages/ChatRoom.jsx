@@ -23,7 +23,7 @@ const ChatRoom = (props) => {
     console.log(username)
     console.log(room)
     console.log(window.location.hostname)
-    ws.current = new WebSocket(`ws://${window.location.hostname}/upgrade?username=${username}&room=${room}`);
+    ws.current = new WebSocket(`wss://${window.location.hostname}/upgrade?username=${username}&room=${room}`);
     ws.current.onopen = () => {
       console.log('WebSocket connection opened');
     };
