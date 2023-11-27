@@ -37,7 +37,6 @@ var (
 func handleWebSocket(c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Println(err)
 		return
 	}
 
@@ -78,9 +77,12 @@ func handleWebSocket(c *gin.Context) {
 		broadcastRooms(hc)
 	}
 
-	defer func() {
-		conn.Close()
+	// publish connection msg to room
+	broadcastMessage(websocket.TextMessage, nil, room, username, "entering")
 
+	defer func() {
+		broadcastMessage(websocket.TextMessage, nil, room, username, "leaving")
+		conn.Close()
 		connectionsMutex.Lock()
 		delete(connections, &cUser)
 		connectionsMutex.Unlock()
@@ -98,22 +100,24 @@ func handleWebSocket(c *gin.Context) {
 			return
 		}
 
-		broadcastMessage(messageType, p, room, username)
+		broadcastMessage(messageType, p, room, username, "chat")
 	}
 }
 
 type Message struct {
-	Msg      string `json:"msg"`
-	Username string `json:"username"`
+	Msg        string `json:"msg"`
+	Username   string `json:"username"`
+	Conclusion string `json:"conclusion"`
 }
 
-func broadcastMessage(messageType int, message []byte, room string, username string) {
+func broadcastMessage(messageType int, message []byte, room string, username string, messageConclusion string) {
 	connectionsMutex.Lock()
 	defer connectionsMutex.Unlock()
 
 	currentMessage := Message{
-		Msg:      string(message),
-		Username: username,
+		Msg:        string(message),
+		Username:   username,
+		Conclusion: messageConclusion,
 	}
 
 	jsonData, err := json.Marshal(currentMessage)
@@ -177,7 +181,14 @@ func broadcastRooms(myc *websocket.Conn) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	myc.WriteMessage(websocket.TextMessage, jsonString)
+	fmt.Println(jsonString)
+
+	err = myc.WriteMessage(websocket.TextMessage, jsonString)
+	if err != nil {
+		connectionsMutex.Lock()
+		delete(homeConnections, myc)
+		connectionsMutex.Unlock()
+	}
 }
 
 func allRooms() []string {
