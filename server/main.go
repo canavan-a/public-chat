@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"slices"
-	"strings"
 	"sync"
 
 	"github.com/gin-contrib/cors"
@@ -173,9 +172,12 @@ func handleHomeSocket(c *gin.Context) {
 }
 
 func broadcastRooms(myc *websocket.Conn) {
-	stringList := ("['" + strings.Join(allRooms(), "','") + "']")
-	message := []byte(strings.Replace(stringList, "''", "", 1))
-	myc.WriteMessage(websocket.TextMessage, message)
+	rooms := allRooms()
+	jsonString, err := json.Marshal(rooms)
+	if err != nil {
+		fmt.Println(err)
+	}
+	myc.WriteMessage(websocket.TextMessage, jsonString)
 }
 
 func allRooms() []string {

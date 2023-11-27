@@ -53,7 +53,7 @@ const Home = (props) => {
     },[room])
 
     useEffect(() => {
-        ws.current = new WebSocket(`wss://${window.location.hostname}/rooms`);
+        ws.current = new WebSocket(`ws://${window.location.hostname}/rooms`);
         ws.current.onopen = () => {
             setConnected(true);
             console.log('WebSocket connection opened');
