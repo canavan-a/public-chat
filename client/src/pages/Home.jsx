@@ -60,7 +60,8 @@ const Home = (props) => {
         };
         ws.current.onmessage = (event) => {
             console.log("message received");
-            setRooms(JSON.parse(event.data.replaceAll("'", '"')));
+            console.log(JSON.parse(event.data))
+            setRooms(JSON.parse(event.data));
         }
         ws.current.onclose = () => {
             setConnected(false);

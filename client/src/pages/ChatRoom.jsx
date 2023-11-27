@@ -63,53 +63,57 @@ const ChatRoom = (props) => {
       scrollableContent.current.scrollTop = scrollableContent.current.scrollHeight;
     }
   };
-  
-  useEffect(()=>{
+
+  useEffect(() => {
     scrollToBottom()
-  },[chat])
+  }, [chat])
 
   return (
     <>
       <div className="hero min-h-screen bg-base-200">
         <div className="hero-content flex-col lg:flex-col w-[100%] mx-auto ">
-        <h1 className="text-5xl font-bold text-center">{room}</h1>
+          <h1 className="text-5xl font-bold text-center">{room}</h1>
           <div className="card sm:w-[100%] lg:w-[50%] bg-base-100 shadow-xl">
-          
-            <div className="card-body">
-              <div 
-              ref={scrollableContent}
-              className="h-96 overflow-y-scroll overflow-x-hidden">
-                <div className="grid grid-cols-1">
-                {chat.map((value, index) => (
-                  <div className="col">
-                    
-                    <div key={index} className={value.username === username ? "chat chat-end" : "chat chat-start flex flex-col"}>
 
-                      {value.username === username ?(<></>):(<div className="badge badge-sm mb-1">{value.username}</div>)}
-                      <div className={`chat-bubble max-w-30 break-words ${value.username === username ? "chat-bubble-primary":"chat-bubble-secondary" }`}>{value.msg}</div>
+            <div className="card-body">
+              <div
+                ref={scrollableContent}
+                className="h-96 overflow-y-scroll overflow-x-hidden">
+                <div className="grid grid-cols-1">
+                  {chat.map((value, index) => (
+                    <div className="col">
+                      {value.conclusion === "chat" ? (
+                        <div key={index} className={value.username === username ? "chat chat-end" : "chat chat-start flex flex-col"}>
+
+                          {value.username === username ? (<></>) : (<b className="badge badge-sm mb-1">{value.username}</b>)}
+                          <div className={`chat-bubble max-w-30 break-words ${value.username === username ? "chat-bubble-primary" : "chat-bubble-secondary"}`}>{value.msg}</div>
+                        </div>
+                      ) : (<>
+                          {value.conclusion === "entering"?(<div className='text-center'><b>{value.username}</b> has joined</div>)
+                          :(<div className='text-center'><b>{value.username}</b> left</div>)}
+                          </>)}
                     </div>
-                  </div>
-                ))}
+                  ))}
                 </div>
 
               </div>
               <div className="grid grid-cols-12 gap-x-2">
-                <input className="input input-bordered input-success input-md col-span-10" 
-                        placeholder={"type something here"} 
-                        value={msg}
-                        onKeyDown={handleEnterKeyPress}
-                        onChange={(e) => { setMsg(e.target.value) }}></input>
+                <input className="input input-bordered input-success input-md col-span-10"
+                  placeholder={"type something here"}
+                  value={msg}
+                  onKeyDown={handleEnterKeyPress}
+                  onChange={(e) => { setMsg(e.target.value) }}></input>
                 <button className='btn btn-primary col-span-2' onClick={sendMessage}>Send</button>
               </div>
             </div>
-            
-            
+
+
           </div>
         </div>
       </div>
 
 
-      
+
     </>
   )
 }
