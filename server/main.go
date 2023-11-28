@@ -131,6 +131,13 @@ func broadcastMessage(messageType int, message []byte, room string, username str
 		return
 	}
 
+	//send msg to database
+	err = insertMsg(room, jsonData)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	for cUser := range connections {
 		if cUser.Room == room { // need to select the correct room
 			err := cUser.Connection.WriteMessage(messageType, jsonData)
@@ -259,9 +266,60 @@ func handleChatlog(c *gin.Context) {
 	rows, err := db.Query("SELECT msg FROM chatlog WHERE room = $1 ORDER BY msg_time ASC LIMIT 50;", room)
 	if err != nil {
 		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Incorrect size value"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Query error"})
 		return
 	}
 	defer rows.Close()
+
+	// Slice to store the messages
+	var messages []json.RawMessage
+
+	// Iterate through rows and append raw JSON messages to the array
+	for rows.Next() {
+		var msgJSON json.RawMessage
+		err := rows.Scan(&msgJSON)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
+		messages = append(messages, msgJSON)
+	}
+
+	// Check for errors from iterating over rows
+	if err := rows.Err(); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	// Send the JSON array of raw messages in the response
+	c.JSON(http.StatusOK, messages)
+
+}
+
+func insertMsg(room string, msg []byte) error {
+
+	pw := os.Getenv("POSTGRES_PASSWORD")
+	un := os.Getenv("POSTGRES_USERNAME")
+	dbname := os.Getenv("POSRGEST_DB")
+
+	connectionString := fmt.Sprintf("user=%s password=%s dbname=%s port=%d", un, pw, dbname, 5432)
+
+	db, err := sql.Open("postgres", connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	rows, err := db.Query("INSERT INTO chatlog (room, msg) VALUES ($1, $2)", room, msg)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	defer rows.Close()
+
+	return nil
 
 }
