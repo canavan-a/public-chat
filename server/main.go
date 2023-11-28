@@ -1,16 +1,20 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"slices"
 	"sync"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 type ConnectionUser struct {
@@ -203,6 +207,11 @@ func allRooms() []string {
 }
 
 func main() {
+
+	if err := godotenv.Load(); err != nil {
+		fmt.Println("Error loading .env file")
+	}
+
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.Default()
@@ -215,12 +224,9 @@ func main() {
 
 	r.Static("/assets", "./assets")
 
-	// r.GET("/", func(c *gin.Context) {
-	// 	c.String(http.StatusOK, "Server is running.")
-	// })
-
 	r.GET("/upgrade", handleWebSocket)
 	r.GET("/rooms", handleHomeSocket)
+	r.GET("/chatlog", handleChatlog)
 
 	r.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", nil)
@@ -229,4 +235,33 @@ func main() {
 	fmt.Println("server is running")
 
 	r.Run(":80")
+}
+
+func handleChatlog(c *gin.Context) {
+	room := c.Query("r")
+	fmt.Println(room)
+	if room == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no query param"})
+	}
+
+	pw := os.Getenv("POSTGRES_PASSWORD")
+	un := os.Getenv("POSTGRES_USERNAME")
+	dbname := os.Getenv("POSRGEST_DB")
+
+	connectionString := fmt.Sprintf("user=%s password=%s dbname=%s port=%d", un, pw, dbname, 5432)
+
+	db, err := sql.Open("postgres", connectionString)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT msg FROM chatlog WHERE room = $1 ORDER BY msg_time ASC LIMIT 50;", room)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Incorrect size value"})
+		return
+	}
+	defer rows.Close()
+
 }

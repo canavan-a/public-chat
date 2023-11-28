@@ -53,7 +53,7 @@ const Home = (props) => {
     },[room])
 
     useEffect(() => {
-        ws.current = new WebSocket(`wss://${window.location.hostname}/rooms`);
+        ws.current = new WebSocket(`ws://${window.location.hostname}/rooms`);
         ws.current.onopen = () => {
             setConnected(true);
             console.log('WebSocket connection opened');
@@ -95,12 +95,14 @@ const Home = (props) => {
                         <p className="py-6">Messages never stored or cached. </p>
                         <div className="grid grid-cols-4 max-w-md gap-4">
                             <div className="grid grid-cols-6 gap-4 col-span-2">
-                                <input className={`input input-bordered input-sm col-span-6 ${usernameValid?'':'input-error'}`} value={username} onChange={(e)=>{setUsername(e.target.value)}} placeholder='username'></input>
-                                <input className={`input input-bordered input-sm col-span-6 ${roomValid?'':'input-error'}`} value={room} onChange={(e)=>{setRoom(e.target.value)}} placeholder='room'></input>
+                                <input className={`input input-bordered input-sm text-secondary col-span-6 ${usernameValid?'':'input-error'}`} value={username} onChange={(e)=>{setUsername(e.target.value)}} placeholder='your name'></input>
+                                <input className={`input input-bordered input-sm text-secondary col-span-6 ${roomValid?'':'input-error'}`} value={room} onChange={(e)=>{setRoom(e.target.value)}} placeholder='room'></input>
                                 {/* <div className="col-span-2"></div> */}
                                 {connected==="pending"?(<button className="btn btn-glass btn-sm col-span-3">loading</button>):(
                                 <>{connected ? (
-                                    <button className="btn btn-primary btn-sm col-span-3" onClick={enterRoom}>Go</button>
+                                    <button className="btn btn-primary btn-sm col-span-3" onClick={enterRoom}>
+                                        {rooms.includes(room)?"Join":"Create"}
+                                    </button>
                                 ) : (
                                     <button className="btn btn-warning btn-sm col-span-3" onClick={() => { setChangeRoom(!changeRoom) }}>reconnect</button>
                                 )}
@@ -133,7 +135,7 @@ const RoomInstance = (props) =>{
     const {setFirstPassUsername} = props
 
     return(
-        <button onClick={()=>{setRoom(name); setFirstPassUsername(false); setToggle(!toggle);}} className={`btn btn-outline btn-sm mr-4 col-span-6 ${ room === name ?"btn-primary":""}`}>{name}</button>
+        <button onClick={()=>{setRoom(name); setFirstPassUsername(false); setToggle(!toggle);}} className={`btn btn-outline btn-sm mr-4 col-span-6 ${ room === name ?"btn-secondary":""}`}>{name}</button>
     )
 }
 

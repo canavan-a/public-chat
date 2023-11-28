@@ -1,0 +1,6 @@
+CREATE TABLE chatlog(
+    message_id SERIAL PRIMARY KEY,
+    msg_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    room VARCHAR(255),
+    msg JSON
+)
