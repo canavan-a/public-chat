@@ -132,11 +132,11 @@ func broadcastMessage(messageType int, message []byte, room string, username str
 	}
 
 	//send msg to database
-	err = insertMsg(room, jsonData)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	// err = insertMsg(room, jsonData)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return
+	// }
 
 	for cUser := range connections {
 		if cUser.Room == room { // need to select the correct room
@@ -233,7 +233,7 @@ func main() {
 
 	r.GET("/upgrade", handleWebSocket)
 	r.GET("/rooms", handleHomeSocket)
-	r.GET("/chatlog", handleChatlog)
+	// r.GET("/chatlog", handleChatlog)
 
 	r.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", nil)
