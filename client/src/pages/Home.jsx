@@ -79,7 +79,6 @@ const Home = (props) => {
             navigate(`/chat?r=${room}&un=${username}`)
         }
         else{
-            
         }
         
     }

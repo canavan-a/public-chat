@@ -43,6 +43,15 @@ const ChatRoom = (props) => {
     };
   }, [changeRoom, username, room]);
 
+  useEffect(()=>{
+    axios.get(`http://${window.location.hostname}/chatlog?r=${room}`).then((response)=>{
+      const temp = response.data.filter((item)=>(item.conclusion !== "entering" && item.conclusion !== "leaving" ))
+      setChat(temp);
+    }).catch((error)=>{
+
+    });
+  },[])
+
 
   const handleEnterKeyPress = (event) => {
     if (event.key === 'Enter') {

@@ -80,7 +80,6 @@ func handleWebSocket(c *gin.Context) {
 	for hc := range homeConnections {
 		broadcastRooms(hc)
 	}
-
 	// publish connection msg to room
 	broadcastMessage(websocket.TextMessage, nil, room, username, "entering")
 
@@ -131,7 +130,8 @@ func broadcastMessage(messageType int, message []byte, room string, username str
 		return
 	}
 
-	//send msg to database
+	// send msg to database
+	go insertMsg(room, jsonData)
 	// err = insertMsg(room, jsonData)
 	// if err != nil {
 	// 	log.Println(err)
@@ -233,7 +233,7 @@ func main() {
 
 	r.GET("/upgrade", handleWebSocket)
 	r.GET("/rooms", handleHomeSocket)
-	// r.GET("/chatlog", handleChatlog)
+	r.GET("/chatlog", handleChatlog)
 
 	r.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", nil)
@@ -251,11 +251,7 @@ func handleChatlog(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "no query param"})
 	}
 
-	pw := os.Getenv("POSTGRES_PASSWORD")
-	un := os.Getenv("POSTGRES_USERNAME")
-	dbname := os.Getenv("POSRGEST_DB")
-
-	connectionString := fmt.Sprintf("user=%s password=%s dbname=%s port=%d", un, pw, dbname, 5432)
+	connectionString := os.Getenv("POSTGRES_CONN_STR")
 
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
@@ -301,11 +297,7 @@ func handleChatlog(c *gin.Context) {
 
 func insertMsg(room string, msg []byte) error {
 
-	pw := os.Getenv("POSTGRES_PASSWORD")
-	un := os.Getenv("POSTGRES_USERNAME")
-	dbname := os.Getenv("POSRGEST_DB")
-
-	connectionString := fmt.Sprintf("user=%s password=%s dbname=%s port=%d", un, pw, dbname, 5432)
+	connectionString := os.Getenv("POSTGRES_CONN_STR")
 
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
