@@ -33,7 +33,7 @@ jobs:
 
       - name: Create .env file for client
         working-directory: ./client
-        run: echo "VITE_WS_PATH='ws://localhost'" > .env
+        run: echo "VITE_WS_PROTOCOL='wss://'" > .env
 
       - name: Run npm build in the cloned repository
         working-directory: ./client

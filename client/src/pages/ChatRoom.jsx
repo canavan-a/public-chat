@@ -5,7 +5,9 @@ import { useNavigate } from "react-router-dom";
 const ChatRoom = (props) => {
   const navigate = useNavigate();
 
-  const [wsApi, setWsApi] = useState(import.meta.env.VITE_WS_PATH);
+  const [wsApi, setWsApi] = useState(
+    import.meta.env.VITE_WS_PROTOCOL + window.location.hostname
+  );
   const ws = useRef(null);
   const scrollableContent = useRef(null);
 
